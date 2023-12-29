@@ -119,6 +119,8 @@ while True:
     elif not mouse_button:
         mouse_premuto = False
     
+    vertici.clear()
+
     for i in range(num_spicchi):
         # Calcola gli angoli iniziale e finale per ciascuno spicchio
         start_angle = i * angolo_spicchio + angolo_rotazione

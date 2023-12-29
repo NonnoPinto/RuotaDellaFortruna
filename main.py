@@ -5,7 +5,7 @@ import sys
 import os
 
 # Specifica il percorso della cartella
-percorso_cartella = "./"
+percorso_cartella = "./images"
 # Ottieni la lista di tutti i file nella cartella
 elenco_files = os.listdir(percorso_cartella)
 # Filtra solo i file con estensione .png o .jpg
@@ -61,12 +61,19 @@ sfondo_colore = (255, 255, 255)
 # Variabile per tracciare lo stato del mouse
 mouse_premuto = False
 
+# Variabili per la rotazione
 angolo_rotazione = 1.0
 velocita_rotazione = 0.0
 smorzamento = 1.0
 
+# Array per salvare i poligoni
+poligoni = []
+
 # Ciclo principale
 while True:
+    # Ottieni lo stato dei pulsanti del mouse
+    mouse_button = pg.mouse.get_pressed()[0]
+
     # Per chiudere la finestra con escape
     for event in pg.event.get():
         if event.type == pg.QUIT:
@@ -76,6 +83,13 @@ while True:
             if event.key == pg.K_ESCAPE:
                 pg.quit()
                 sys.exit()
+        elif mouse_button:
+            mouse_pos = pg.mouse.get_pos()
+            # Verifica se il click è avvenuto all'interno di uno spicchio
+            for i in range(num_spicchi):
+                if poligoni[i].collidepoint(mouse_pos):
+                    # Verifica se il click è avvenuto all'interno del rettangolo dello spicchio
+                    print(f"Hai cliccato sullo spicchio {i + 1}")
 
     # Aggiorna posizioni relative alla dimensione della finestra
     w_width, w_height = pg.display.get_surface().get_size()
@@ -88,9 +102,6 @@ while True:
     # Controlla la pressione del pulsante del mouse
     mouse_pos = pg.mouse.get_pos()
     bottone_rect = pg.Rect(bottone_x, bottone_y, bottone_w, bottone_h)
-
-    # Ottieni lo stato dei pulsanti del mouse
-    mouse_button = pg.mouse.get_pressed()[0]
 
     # Pulisce la schermata
     screen.fill(sfondo_colore)
@@ -127,7 +138,7 @@ while True:
             ),
         ]
         # Disegna il poligono approssimato rappresentante l'intero spicchio
-        pg.draw.polygon(screen, colors[i%len(colors)], vertici_spicchio)
+        poligoni.append(pg.draw.polygon(screen, colors[i%len(colors)], vertici_spicchio))
 
         # Calcola il centro dell'angolo dello spicchio
         angolo_centrale = (i + 0.5) * angolo_spicchio

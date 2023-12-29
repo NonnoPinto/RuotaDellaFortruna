@@ -3,6 +3,7 @@ import pygame as pg
 import pygame.gfxdraw
 import sys
 import os
+import subprocess
 
 # Specifica il percorso della cartella
 percorso_cartella = "./images"
@@ -13,13 +14,13 @@ files_immagini = [file for file in elenco_files if file.lower().endswith((".png"
 
 # Inizializza pg
 pg.init()
-
 # Ottieni le informazioni sul display
 display_info = pg.display.Info()
-
 # Creazione della finestra
 screen = pg.display.set_mode((800, 600), pg.RESIZABLE)
 pg.display.set_caption("Ruota della fortuna")
+# Colore di sfondo
+sfondo_colore = (255, 255, 255)
 
 # Dimensioni e testo bottone
 bottone_w, bottone_h = 100, 50
@@ -55,9 +56,6 @@ colors = [
     (0, 255, 128),   # Verde chiaro
 ]
 
-# Colore di sfondo
-sfondo_colore = (255, 255, 255)
-
 # Variabile per tracciare lo stato del mouse
 mouse_premuto = False
 
@@ -67,7 +65,8 @@ velocita_rotazione = 0.0
 smorzamento = 1.0
 
 # Array per salvare i poligoni
-poligoni = []
+vertici = []
+distanza = 0
 
 # Ciclo principale
 while True:
@@ -76,20 +75,24 @@ while True:
 
     # Per chiudere la finestra con escape
     for event in pg.event.get():
+        # Chiude la finestra se viene premuto il pulsante di chiusura
         if event.type == pg.QUIT:
             pg.quit()
             sys.exit()
-        elif event.type == pg.KEYDOWN:
-            if event.key == pg.K_ESCAPE:
+        # Chiude la finestra se viene premuto il tasto ESC
+        elif event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                 pg.quit()
                 sys.exit()
+        # Verifica se il click è avvenuto all'interno di uno spicchio
+        # calcolando la distanza tra il mouse e il vertice dello spicchio
         elif mouse_button:
             mouse_pos = pg.mouse.get_pos()
-            # Verifica se il click è avvenuto all'interno di uno spicchio
-            for i in range(num_spicchi):
-                if poligoni[i].collidepoint(mouse_pos):
-                    # Verifica se il click è avvenuto all'interno del rettangolo dello spicchio
-                    print(f"Hai cliccato sullo spicchio {i + 1}")
+            for i, vertice in enumerate(vertici):
+                _distanza = math.sqrt((vertice[0] - mouse_pos[0])**2 + (vertice[1] - mouse_pos[1])**2)
+                if _distanza < distanza:
+                    path = os.path.join(percorso_cartella, files_immagini[i])
+                    subprocess.run(['start', os.path.abspath(path)], shell=True)
+                    break
 
     # Aggiorna posizioni relative alla dimensione della finestra
     w_width, w_height = pg.display.get_surface().get_size()
@@ -137,8 +140,14 @@ while True:
                 centro[1] + raggio * math.sin(math.radians(end_angle)),
             ),
         ]
+
         # Disegna il poligono approssimato rappresentante l'intero spicchio
-        poligoni.append(pg.draw.polygon(screen, colors[i%len(colors)], vertici_spicchio))
+        pg.draw.polygon(screen, colors[i%len(colors)], vertici_spicchio)
+        vertici.append(vertici_spicchio[2])
+
+        # Calcola solo la prima volta il raggio del cerchio
+        if distanza == 0:
+            distanza = math.sqrt((vertici_spicchio[2][0] - vertici_spicchio[3][0])**2 + (vertici_spicchio[2][1] - vertici_spicchio[3][1])**2)
 
         # Calcola il centro dell'angolo dello spicchio
         angolo_centrale = (i + 0.5) * angolo_spicchio
@@ -148,7 +157,7 @@ while True:
         )
 
         # Disegna il testo al centro dello spicchio
-        testo = font.render(files_immagini[i], True, (0, 0, 0))
+        testo = font.render(str(i), True, (0, 0, 0))
         text_rect = testo.get_rect(center=centro_angolo)
         screen.blit(testo, text_rect)
 

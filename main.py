@@ -93,7 +93,6 @@ while True:
                 sys.exit()
         # Verifica se il click è avvenuto all'interno di uno spicchio
         # calcolando la distanza tra il mouse e il vertice dello spicchio
-        # diventerà deprecato appena il cazzo di triangolo funzionerà
         '''
         elif mouse_button:
             mouse_pos = pg.mouse.get_pos()

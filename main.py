@@ -4,6 +4,7 @@ import pygame.gfxdraw
 import sys
 import os
 import subprocess
+import platform
 
 # Specifica il percorso della cartella
 percorso_cartella = "./images"
@@ -114,8 +115,13 @@ while True:
                 min_dist = _distanza
                 file_to_open = i
         #print(f"File da aprire: {file_to_open}")
-        path = os.path.join(percorso_cartella, files_immagini[file_to_open])
-        subprocess.run(['start', os.path.abspath(path)], shell=True)
+        filepath = os.path.join(percorso_cartella, files_immagini[file_to_open])
+        if platform.system() == 'Darwin':       # macOS
+            subprocess.call(('open', filepath))
+        elif platform.system() == 'Windows':    # Windows
+            os.startfile(filepath)
+        else:                                   # linux variants
+            subprocess.call(('xdg-open', filepath))
         open = False
 
     # Aggiorna posizioni relative alla dimensione della finestra

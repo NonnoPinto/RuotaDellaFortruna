@@ -19,13 +19,12 @@ display_info = pg.display.Info()
 # Creazione della finestra
 screen = pg.display.set_mode((800, 600), pg.RESIZABLE)
 pg.display.set_caption("Ruota della fortuna")
-# Colore di sfondo
 sfondo_colore = (255, 255, 255)
 
 # Dimensioni e testo bottone
 bottone_w, bottone_h = 100, 50
 testo_bottone = "Ruota!"
-font = pygame.font.Font(None, 30)
+font = pygame.font.SysFont(None, 30)
 
 # Cerchio
 raggio = 200
@@ -60,13 +59,22 @@ colors = [
 mouse_premuto = False
 
 # Variabili per la rotazione
-angolo_rotazione = 1.0
+angolo_rotazione = 1
 velocita_rotazione = 0.0
 smorzamento = 1.0
 
 # Array per salvare i poligoni
 vertici = []
-distanza = 0
+#distanza = 0
+open = False
+
+# Carica l'immagine del triangolo
+triangolo_img = pg.image.load("triangolo.png")
+# Definisci le dimensioni desiderate per il triangolo
+nuova_larghezza = 30
+nuova_altezza = 50
+# Ridimensiona l'immagine del triangolo
+triangolo_img = pg.transform.scale(triangolo_img, (nuova_larghezza, nuova_altezza))
 
 # Ciclo principale
 while True:
@@ -85,20 +93,38 @@ while True:
                 sys.exit()
         # Verifica se il click è avvenuto all'interno di uno spicchio
         # calcolando la distanza tra il mouse e il vertice dello spicchio
+        # diventerà deprecato appena il cazzo di triangolo funzionerà
+        '''
         elif mouse_button:
             mouse_pos = pg.mouse.get_pos()
             for i, vertice in enumerate(vertici):
                 _distanza = math.sqrt((vertice[0] - mouse_pos[0])**2 + (vertice[1] - mouse_pos[1])**2)
                 if _distanza < distanza:
-                    path = os.path.join(percorso_cartella, files_immagini[i])
+                     path = os.path.join(percorso_cartella, files_immagini[i])
                     subprocess.run(['start', os.path.abspath(path)], shell=True)
                     break
+        '''
+
+    if open and velocita_rotazione == 0.0:
+        min_dist = sys.maxsize
+        file_to_open = -1
+        for i, vertice in enumerate(vertici):
+            # per qualche oscura ragione qui ha i valori sbagiati di vertice[0] e vertice[1]
+            _distanza = math.sqrt((triangolo_rect[0]-vertice[0])**2 + (triangolo_rect[1]-vertice[1])**2)
+            if _distanza < min_dist:
+                min_dist = _distanza
+                file_to_open = i
+        #print(f"File da aprire: {file_to_open}")
+        path = os.path.join(percorso_cartella, files_immagini[file_to_open])
+        subprocess.run(['start', os.path.abspath(path)], shell=True)
+        open = False
 
     # Aggiorna posizioni relative alla dimensione della finestra
     w_width, w_height = pg.display.get_surface().get_size()
     bottone_x, bottone_y = (w_width // 2) - (bottone_w / 2), (w_height - 70)
     centro = (w_width//2, w_height//2)
 
+    # Per far ruotare la ruota
     angolo_rotazione += velocita_rotazione
     velocita_rotazione *= smorzamento
 
@@ -113,8 +139,11 @@ while True:
         if velocita_rotazione == 0.0:
             velocita_rotazione = 50.0
             smorzamento = 1.0
+            testo_bottone = "Ferma!"
         else:
             smorzamento = 0.99
+            testo_bottone = "Ruota!"
+            open = True
         mouse_premuto = True
     elif not mouse_button:
         mouse_premuto = False
@@ -147,9 +176,9 @@ while True:
         pg.draw.polygon(screen, colors[i%len(colors)], vertici_spicchio)
         vertici.append(vertici_spicchio[2])
 
-        # Calcola solo la prima volta il raggio del cerchio
-        if distanza == 0:
-            distanza = math.sqrt((vertici_spicchio[2][0] - vertici_spicchio[3][0])**2 + (vertici_spicchio[2][1] - vertici_spicchio[3][1])**2)
+        # Calcola solo la prima volta il raggio del cerchio per il click e la posizione del triangolo
+        #if distanza == 0:
+        #    distanza = math.sqrt((vertici_spicchio[2][0] - vertici_spicchio[3][0])**2 + (vertici_spicchio[2][1] - vertici_spicchio[3][1])**2)
 
         # Calcola il centro dell'angolo dello spicchio
         angolo_centrale = (i + 0.5) * angolo_spicchio
@@ -162,6 +191,8 @@ while True:
         testo = font.render(str(i), True, (0, 0, 0))
         text_rect = testo.get_rect(center=centro_angolo)
         screen.blit(testo, text_rect)
+        triangolo_rect = triangolo_img.get_rect(center=(vertici_spicchio[0][0], vertici_spicchio[0][1]-raggio)) 
+        screen.blit(triangolo_img, triangolo_rect)
 
     # Disegna il bottone
     pg.draw.rect(screen, (0,0,0), bottone_rect)

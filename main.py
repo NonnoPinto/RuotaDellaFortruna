@@ -114,7 +114,7 @@ while True:
             if _distanza < min_dist:
                 min_dist = _distanza
                 file_to_open = i
-        #print(f"File da aprire: {file_to_open}")
+        print(f"File da aprire: {file_to_open}")
         filepath = os.path.join(percorso_cartella, files_immagini[file_to_open])
         if platform.system() == 'Darwin':       # macOS
             subprocess.call(('open', filepath))
@@ -193,7 +193,7 @@ while True:
         )
 
         # Disegna il testo al centro dello spicchio
-        testo = font.render(str(i), True, (0, 0, 0))
+        testo = font.render(str(i+1), True, (0, 0, 0))
         text_rect = testo.get_rect(center=centro_angolo)
         screen.blit(testo, text_rect)
         triangolo_rect = triangolo_img.get_rect(center=(vertici_spicchio[0][0], vertici_spicchio[0][1]-raggio)) 
